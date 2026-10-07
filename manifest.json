@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "ROS 2 Docs Version Redirect",
+  "version": "1.1.0",
+  "description": "Detects when you land on ROS 2 docs for a different distro than the one you use and sends you to the matching page.",
+  "permissions": [
+    "storage",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "https://docs.ros.org/*",
+    "https://docs.ros2.org/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://docs.ros.org/en/*",
+        "https://docs.ros2.org/*"
+      ],
+      "js": [
+        "distros.js",
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_title": "ROS 2 Docs Version Redirect",
+    "default_popup": "options.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  }
+}

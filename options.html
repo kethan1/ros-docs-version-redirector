@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ROS 2 Docs Version Redirect</title>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #18181b; --muted: #71717a; --line: #e4e4e7;
+      --soft: #f4f4f5; --raised: #ffffff; --track: #d4d4d8; --knob: #ffffff;
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #18181b; --fg: #f4f4f5; --muted: #a1a1aa; --line: #2e2e33;
+        --soft: #27272a; --raised: #3f3f46; --track: #3f3f46; --knob: #a1a1aa;
+      }
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0; padding: 16px; width: 300px; background: var(--bg); color: var(--fg);
+      font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    :focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+    header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; }
+    h1 { font-size: 13px; font-weight: 600; margin: 0; }
+    #status { color: var(--muted); font-size: 12px; opacity: 0; transition: opacity .2s; }
+    #status.show { opacity: 1; }
+
+    .label { display: block; color: var(--muted); font-size: 12px; margin: 0 0 6px; }
+    section + section { margin-top: 16px; }
+    .hint { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+
+    .select { position: relative; }
+    .select::after {
+      content: ""; position: absolute; right: 12px; top: 50%; width: 5px; height: 5px;
+      border: solid var(--muted); border-width: 0 1.5px 1.5px 0;
+      transform: translateY(-75%) rotate(45deg); pointer-events: none;
+    }
+    select {
+      appearance: none; width: 100%; font: inherit; color: inherit; background: var(--bg);
+      border: 1px solid var(--line); border-radius: 8px; padding: 7px 30px 7px 10px; cursor: pointer;
+    }
+    select:hover { border-color: var(--track); }
+
+    .seg { display: flex; gap: 2px; padding: 2px; background: var(--soft); border-radius: 8px; }
+    .seg label { position: relative; flex: 1 1 auto; }
+    .seg input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+    .seg span {
+      display: block; text-align: center; padding: 5px 8px; border-radius: 6px;
+      color: var(--muted); font-size: 12.5px; transition: background .15s, color .15s;
+    }
+    .seg label:hover span { color: var(--fg); }
+    .seg input:checked + span { background: var(--raised); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+    .seg input:focus-visible + span { outline: 2px solid var(--fg); outline-offset: 0; }
+
+    input[type=number] {
+      width: 3em; font: inherit; color: var(--fg); background: var(--bg); text-align: center;
+      border: 1px solid var(--line); border-radius: 6px; padding: 1px 2px; margin: 0 2px;
+      -moz-appearance: textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    hr { border: 0; border-top: 1px solid var(--line); margin: 18px 0 14px; }
+
+    .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; cursor: pointer; }
+    .row + .row { margin-top: 12px; }
+    .row .hint { display: block; margin-top: 2px; }
+    .switch {
+      appearance: none; flex: none; position: relative; width: 28px; height: 16px; margin: 1px 0 0;
+      border-radius: 999px; background: var(--track); cursor: pointer; transition: background .15s;
+    }
+    .switch::before {
+      content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px;
+      border-radius: 50%; background: var(--knob); transition: transform .15s;
+    }
+    .switch:checked { background: var(--fg); }
+    .switch:checked::before { transform: translateX(12px); background: var(--bg); }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ROS 2 Docs Version Redirect</h1>
+    <span id="status" role="status">Saved</span>
+  </header>
+
+  <section>
+    <label class="label" for="targetDistro">Your distro</label>
+    <div class="select"><select id="targetDistro"></select></div>
+  </section>
+
+  <section>
+    <span class="label" id="modeLabel">On another distro's docs</span>
+    <div class="seg" role="radiogroup" aria-labelledby="modeLabel">
+      <label><input type="radio" name="mode" value="auto"><span>Instant</span></label>
+      <label><input type="radio" name="mode" value="delayed"><span>Countdown</span></label>
+      <label><input type="radio" name="mode" value="manual"><span>Ask</span></label>
+      <label><input type="radio" name="mode" value="off"><span>Off</span></label>
+    </div>
+    <p class="hint" data-mode="auto">Switch as soon as the page opens.</p>
+    <p class="hint" data-mode="delayed">
+      Switch after <input type="number" id="delaySeconds" min="1" max="60" aria-label="Countdown in seconds">
+      seconds. You can cancel.
+    </p>
+    <p class="hint" data-mode="manual">Show a prompt and let me choose.</p>
+    <p class="hint" data-mode="off">Leave the page as it is.</p>
+  </section>
+
+  <hr>
+
+  <label class="row">
+    <span>Find the matching page
+      <span class="hint">Follows moved pages and suggests a search instead of a 404.</span></span>
+    <input type="checkbox" class="switch" id="verifyExists">
+  </label>
+  <label class="row">
+    <span>Redirect from newer distros
+      <span class="hint">For example, from Rolling.</span></span>
+    <input type="checkbox" class="switch" id="redirectFromNewer">
+  </label>
+
+  <script src="distros.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
