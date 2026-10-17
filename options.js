@@ -26,6 +26,7 @@ chrome.storage.sync.get(DEFAULT_SETTINGS, (s) => {
   $("delaySeconds").value = s.delaySeconds;
   $("verifyExists").checked = s.verifyExists;
   $("redirectFromNewer").checked = s.redirectFromNewer;
+  $("redirectFromRos1").checked = s.redirectFromRos1;
 });
 
 select.addEventListener("change", () => save({ targetDistro: select.value }));
@@ -43,6 +44,6 @@ $("delaySeconds").addEventListener("change", (e) => {
   save({ delaySeconds: v });
 });
 
-for (const id of ["verifyExists", "redirectFromNewer"]) {
+for (const id of ["verifyExists", "redirectFromNewer", "redirectFromRos1"]) {
   $(id).addEventListener("change", (e) => save({ [id]: e.target.checked }));
 }

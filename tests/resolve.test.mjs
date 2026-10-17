@@ -35,12 +35,17 @@ describe("parseDocsUrl", () => {
     ["https://docs.ros2.org/foxy/api/rclcpp/classrclcpp_1_1Node.html", { kind: "pkg", distro: "foxy", layout: "legacy", pkg: "rclcpp", rest: "classrclcpp_1_1Node.html" }],
     ["https://docs.ros2.org/latest/api/rclpy/", { kind: "pkg", distro: "foxy", layout: "legacy", pkg: "rclpy", rest: "" }],
     ["https://docs.ros2.org/galactic/api/", { kind: "pkgindex", distro: "galactic" }],
+    ["https://docs.ros.org/en/noetic/api/std_msgs/html/msg/Header.html", { kind: "pkg", distro: "noetic", layout: "ros1", pkg: "std_msgs", rest: "html/msg/Header.html" }],
+    ["https://docs.ros.org/en/api/std_msgs/html/msg/Header.html", { kind: "pkg", distro: "noetic", layout: "ros1", pkg: "std_msgs", rest: "html/msg/Header.html" }],
+    ["https://docs.ros.org/en/latest-lts/api/roscpp/html/", { kind: "pkg", distro: "noetic", layout: "ros1", pkg: "roscpp", rest: "html/" }],
+    ["https://docs.ros.org/en/melodic/api/", { kind: "pkgindex", distro: "melodic" }],
   ];
   for (const [url, expected] of cases) {
     test(url, () => assert.deepEqual(plain(ext.parseDocsUrl(url)), { ...expected, search: new URL(url).search, hash: new URL(url).hash }));
   }
   for (const url of [
-    "https://docs.ros.org/en/noetic/api/roscpp/html/",       // ROS 1
+    "https://docs.ros.org/en/noetic/changelogs/",             // ROS 1, not API docs
+    "https://docs.ros.org/en/independent/api/rospkg/html/",
     "https://docs.ros.org/en/ros2_packages/",
     "https://docs.ros.org/en/latest/",
     "https://docs.ros2.org/",
@@ -305,6 +310,42 @@ describe("package API docs", () => {
       to: "galactic",
       url: "https://docs.ros2.org/galactic/api/",
     },
+    {
+      name: "ROS 1 message page -> rosdoc2 (Noetic -> Jazzy)",
+      from: "https://docs.ros.org/en/noetic/api/std_msgs/html/msg/Header.html",
+      to: "jazzy",
+      url: "https://docs.ros.org/en/jazzy/p/std_msgs/msg/Header.html",
+    },
+    {
+      name: "ROS 1 message page -> legacy (Kinetic -> Foxy)",
+      from: "https://docs.ros.org/en/kinetic/api/geometry_msgs/html/msg/Twist.html",
+      to: "foxy",
+      url: "https://docs.ros2.org/foxy/api/geometry_msgs/msg/Twist.html",
+    },
+    {
+      name: "unversioned ROS 1 docs (/en/api/) are Noetic",
+      from: "https://docs.ros.org/en/api/nav_msgs/html/srv/GetMap.html",
+      to: "humble",
+      url: "https://docs.ros.org/en/humble/p/nav_msgs/srv/GetMap.html",
+    },
+    {
+      name: "ROS 1 Doxygen class under html/c++/ -> rosdoc2 page",
+      from: "https://docs.ros.org/en/noetic/api/tf2_ros/html/c++/classtf2__ros_1_1Buffer.html",
+      to: "jazzy",
+      url: "https://docs.ros.org/en/jazzy/p/tf2_ros/generated/classtf2__ros_1_1Buffer.html",
+    },
+    {
+      name: "ROS 1 message package index",
+      from: "https://docs.ros.org/en/noetic/api/std_msgs/html/index-msg.html",
+      to: "jazzy",
+      url: "https://docs.ros.org/en/jazzy/p/std_msgs/",
+    },
+    {
+      name: "ROS 1 package list",
+      from: "https://docs.ros.org/en/noetic/api/",
+      to: "jazzy",
+      url: "https://docs.ros.org/en/jazzy/p/",
+    },
   ];
   for (const c of cases) {
     test(c.name, async () => {
@@ -329,6 +370,15 @@ describe("package API docs", () => {
     assert.deepEqual(
       fallbacks.map((f) => f.url),
       ["https://docs.ros.org/en/humble/p/", "https://index.ros.org/p/no_such_package_xyz/"]
+    );
+  });
+
+  test("ROS 1-only package -> offers package list + index.ros.org", async () => {
+    const { match, fallbacks } = await resolve("https://docs.ros.org/en/noetic/api/roscpp/html/classros_1_1NodeHandle.html", "jazzy");
+    assert.equal(match, null);
+    assert.deepEqual(
+      fallbacks.map((f) => f.url),
+      ["https://docs.ros.org/en/jazzy/p/", "https://index.ros.org/p/roscpp/"]
     );
   });
 });

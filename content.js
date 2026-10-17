@@ -16,6 +16,7 @@
 
   if (settings.mode === "off" || page.distro === target) return;
   if (!settings.redirectFromNewer && distroIndex(page.distro) > distroIndex(target)) return;
+  if (!settings.redirectFromRos1 && ROS1_DISTRO_IDS.includes(page.distro)) return;
   if (tab.stayed.includes(page.distro)) return;
 
   const result = await send({

@@ -25,12 +25,25 @@ const DISTRO_IDS = ROS2_DISTROS.map((d) => d.id);
 // docs.ros2.org/latest/ is a copy of the Foxy API docs.
 const LEGACY_ALIASES = { latest: "foxy" };
 
+// ROS 1 distros, oldest -> newest. Only their package API docs are on
+// docs.ros.org (/en/<id>/api/<pkg>/html/); those pages go to the same package in
+// the target ROS 2 distro. They're not in DISTRO_IDS, so distroIndex() places
+// them before every ROS 2 distro.
+const ROS1_DISTRO_IDS = [
+  "diamondback", "electric", "fuerte", "groovy", "hydro", "indigo",
+  "jade", "kinetic", "lunar", "melodic", "noetic",
+];
+
+// docs.ros.org/en/api/ and these trees are copies of the Noetic API docs.
+const ROS1_ALIASES = { latest: "noetic", "latest-lts": "noetic", "latest-available": "noetic" };
+
 const DEFAULT_SETTINGS = {
   targetDistro: "jazzy",
   mode: "delayed", // "auto" | "delayed" | "manual" | "off"
   delaySeconds: 5,
   verifyExists: true,
   redirectFromNewer: true,
+  redirectFromRos1: true,
 };
 
 function getDistro(id) {
@@ -48,6 +61,7 @@ function distroLabel(id) {
 // Describes a distro-versioned ROS 2 docs page, or returns null. Shapes:
 //   { kind: "docs", distro, rest }                        main docs page
 //   { kind: "pkg", distro, layout, pkg, rest }            package API docs page
+//                                                         (layout: "rosdoc2" | "legacy" | "ros1")
 //   { kind: "pkgindex", distro }                          list of all packages
 // `rest` is the path below the distro/package root; all shapes carry search + hash.
 function parseDocsUrl(href) {
@@ -73,6 +87,9 @@ function parseDocsUrl(href) {
       if (p[3] === "p") return pkgPage(p[2], "rosdoc2", 4);
       return { kind: "docs", distro: p[2], rest: p.slice(3).join("/"), ...extra };
     }
+    // ROS 1 package docs: /en/<distro>/api/<pkg>/html/..., or /en/api/<pkg>/html/... (Noetic)
+    const [ros1, apiAt] = p[2] === "api" ? ["noetic", 2] : [ROS1_ALIASES[p[2]] ?? p[2], 3];
+    if (ROS1_DISTRO_IDS.includes(ros1) && p[apiAt] === "api") return pkgPage(ros1, "ros1", apiAt + 1);
   }
 
   if (url.hostname === "docs.ros2.org") {

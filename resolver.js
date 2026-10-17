@@ -266,7 +266,9 @@ async function resolveDocsPage(page, target, smart) {
 
 // Candidate URLs for a package page in the target distro, best first.
 function packageCandidates(page, target) {
-  const { pkg, rest, layout } = page;
+  const { pkg, layout } = page;
+  // ROS 1 docs live under html/, with C++ under html/c++/ when the package also has Python docs.
+  const rest = layout === "ros1" ? page.rest.replace(/^html\/(c\+\+\/)?/, "") : page.rest;
   const tail = page.search + page.hash;
   const api = getDistro(target)?.api;
 
@@ -275,7 +277,7 @@ function packageCandidates(page, target) {
     const index = `https://docs.ros.org/en/${target}/p/`;
     if (!rest || rest === "index.html" || rest === "index-msg.html") return { list: [root], root, index };
     if (layout === "rosdoc2") return { list: [root + rest + tail], root, index };
-    // Legacy Doxygen/Sphinx docs -> rosdoc2. Message pages (msg/Foo.html) and
+    // Legacy or ROS 1 Doxygen/Sphinx docs -> rosdoc2. Message pages (msg/Foo.html) and
     // Python docs keep their paths; Doxygen pages moved under generated/
     // (Sphinx-rendered) and generated/doxygen/html/ (raw Doxygen, same anchors).
     const list = [root + rest + tail];
